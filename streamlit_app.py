@@ -10,7 +10,7 @@ load_dotenv()
 
 st.set_page_config(page_title="Industrial RAG Assistant", page_icon="🏭")
 st.title("🏭 Industrial RAG Assistant")
-st.caption("Ask questions about your industrial documents or search the web.")
+st.caption("Searches your industrial documents first, falls back to the web if needed.")
 
 @st.cache_resource
 def load_vectorstore():
@@ -18,6 +18,11 @@ def load_vectorstore():
     return FAISS.load_local("vectorstore", embeddings, allow_dangerous_deserialization=True)
 
 vectorstore = load_vectorstore()
+
+def get_relevant_docs(question, threshold=1.0):
+    """Search FAISS and return only docs with similarity score below threshold."""
+    results = vectorstore.similarity_search_with_score(question, k=5)
+    return [doc for doc, score in results if score < threshold]
 
 def web_search(query, max_results=5):
     with DDGS() as ddgs:
@@ -31,7 +36,12 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-search_mode = st.sidebar.radio("Search Mode", ["Documents Only", "Web Only", "Documents + Web"], index=1)
+st.sidebar.markdown("### Search Mode")
+st.sidebar.markdown("**Auto:** Documents → Web fallback")
+st.sidebar.markdown("Searches your PDFs first. Falls back to the web if no relevant content is found.")
+st.sidebar.markdown("---")
+relevance_threshold = st.sidebar.slider("Doc relevance threshold", 0.5, 2.0, 1.0, 0.1,
+    help="Lower = stricter (falls back to web more often). Higher = uses docs even if loosely related.")
 
 if question := st.chat_input("Ask a question..."):
     st.session_state.messages.append({"role": "user", "content": question})
@@ -39,26 +49,27 @@ if question := st.chat_input("Ask a question..."):
         st.markdown(question)
 
     with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
+        with st.spinner("Searching documents..."):
+            docs = get_relevant_docs(question, threshold=relevance_threshold)
             context_parts = []
             doc_sources = []
             web_sources = []
+            source_used = None
 
-            if search_mode in ("Documents Only", "Documents + Web"):
-                docs = vectorstore.as_retriever(search_kwargs={"k": 5}).invoke(question)
-                if docs:
-                    context_parts.append("=== From Documents ===\n" + "\n\n".join([d.page_content for d in docs]))
-                    doc_sources = list({d.metadata.get("source", "Unknown") for d in docs})
-
-            if search_mode in ("Web Only", "Documents + Web"):
+            if docs:
+                context_parts.append("=== From Documents ===\n" + "\n\n".join([d.page_content for d in docs]))
+                doc_sources = list({d.metadata.get("source", "Unknown") for d in docs})
+                source_used = "documents"
+            else:
+                st.toast("No relevant docs found — searching the web...", icon="🌐")
                 web_results = web_search(question)
                 if web_results:
                     web_text = "\n\n".join([f"{r['title']}: {r['body']}" for r in web_results])
                     context_parts.append("=== From Web ===\n" + web_text)
                     web_sources = [r.get("href", "") for r in web_results if r.get("href")]
+                    source_used = "web"
 
             context = "\n\n".join(context_parts)
-
             prompt = f"""Answer the question based on the context below.
 
 {context}
@@ -71,6 +82,11 @@ Answer:"""
             answer = llm.invoke(prompt)
 
         st.markdown(answer)
+
+        if source_used == "documents":
+            st.caption("📄 Answered from your documents")
+        elif source_used == "web":
+            st.caption("🌐 Answered from web search (not found in documents)")
 
         if doc_sources or web_sources:
             with st.expander("Sources"):

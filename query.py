@@ -15,23 +15,30 @@ def web_search(query, max_results=5):
     with DDGS() as ddgs:
         return list(ddgs.text(query, max_results=max_results))
 
-def query_rag(question, mode="both"):
+DOC_RELEVANCE_THRESHOLD = 1.0
+
+def get_relevant_docs(question):
+    """Search FAISS and return only docs with similarity score below threshold."""
+    results = vectorstore.similarity_search_with_score(question, k=5)
+    return [doc for doc, score in results if score < DOC_RELEVANCE_THRESHOLD]
+
+def query_rag(question):
     print(f"\n{'='*80}")
     print(f"Question: {question}")
     print('='*80)
 
     context_parts = []
 
-    if mode in ("docs", "both"):
-        docs = vectorstore.as_retriever(search_kwargs={"k": 5}).invoke(question)
-        if docs:
-            context_parts.append("=== From Documents ===\n" + "\n\n".join([d.page_content for d in docs]))
-            print("\nDocument sources:")
-            for i, doc in enumerate(docs, 1):
-                print(f"  {i}. {doc.metadata.get('source', 'Unknown')}")
+    print("\nSearching documents...")
+    docs = get_relevant_docs(question)
 
-    if mode in ("web", "both"):
-        print("\nSearching the web...")
+    if docs:
+        context_parts.append("=== From Documents ===\n" + "\n\n".join([d.page_content for d in docs]))
+        print("Found in documents:")
+        for i, doc in enumerate(docs, 1):
+            print(f"  {i}. {doc.metadata.get('source', 'Unknown')}")
+    else:
+        print("No relevant docs found — searching the web...")
         results = web_search(question)
         if results:
             web_text = "\n\n".join([f"{r['title']}: {r['body']}" for r in results])
@@ -54,13 +61,11 @@ Answer:"""
 
 if __name__ == "__main__":
     print("Industrial RAG Assistant — type 'exit' to quit.")
-    print("Search modes: 'docs', 'web', 'both' (default: both)")
+    print("Searches documents first, falls back to web if not found.")
     while True:
         question = input("\nQuestion: ").strip()
         if question.lower() in ("exit", "quit", "q"):
             break
         if not question:
             continue
-        mode_input = input("Mode [docs/web/both]: ").strip().lower()
-        mode = mode_input if mode_input in ("docs", "web", "both") else "both"
-        query_rag(question, mode=mode)
+        query_rag(question)
