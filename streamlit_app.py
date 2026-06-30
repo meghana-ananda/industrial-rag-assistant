@@ -70,8 +70,16 @@ if question := st.chat_input("Ask a question..."):
                     source_used = "web"
 
             context = "\n\n".join(context_parts)
-            prompt = f"""Answer the question based on the context below.
+            # Include last 4 messages (2 exchanges) so follow-up questions work
+            recent_history = st.session_state.messages[-4:] if len(st.session_state.messages) > 1 else []
+            history_text = "\n".join(
+                [f"{m['role'].capitalize()}: {m['content']}" for m in recent_history]
+            ) if recent_history else ""
 
+            history_section = f"\nConversation so far:\n{history_text}\n" if history_text else ""
+
+            prompt = f"""Answer the question based on the context below.{history_section}
+Context:
 {context}
 
 Question: {question}
