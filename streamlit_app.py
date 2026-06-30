@@ -4,12 +4,13 @@ from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import OllamaLLM
+from duckduckgo_search import DDGS
 
 load_dotenv()
 
 st.set_page_config(page_title="Industrial RAG Assistant", page_icon="🏭")
 st.title("🏭 Industrial RAG Assistant")
-st.caption("Ask questions about your industrial documents.")
+st.caption("Ask questions about your industrial documents or search the web.")
 
 @st.cache_resource
 def load_vectorstore():
@@ -18,6 +19,11 @@ def load_vectorstore():
 
 vectorstore = load_vectorstore()
 
+def web_search(query, max_results=5):
+    with DDGS() as ddgs:
+        results = list(ddgs.text(query, max_results=max_results))
+    return results
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -25,17 +31,35 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-if question := st.chat_input("Ask a question about your documents..."):
+search_mode = st.sidebar.radio("Search Mode", ["Documents Only", "Web Only", "Documents + Web"])
+
+if question := st.chat_input("Ask a question..."):
     st.session_state.messages.append({"role": "user", "content": question})
     with st.chat_message("user"):
         st.markdown(question)
 
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            docs = vectorstore.as_retriever(search_kwargs={"k": 5}).invoke(question)
-            context = "\n\n".join([doc.page_content for doc in docs])
+            context_parts = []
+            doc_sources = []
+            web_sources = []
 
-            prompt = f"""Answer the question based ONLY on this context:
+            if search_mode in ("Documents Only", "Documents + Web"):
+                docs = vectorstore.as_retriever(search_kwargs={"k": 5}).invoke(question)
+                if docs:
+                    context_parts.append("=== From Documents ===\n" + "\n\n".join([d.page_content for d in docs]))
+                    doc_sources = list({d.metadata.get("source", "Unknown") for d in docs})
+
+            if search_mode in ("Web Only", "Documents + Web"):
+                web_results = web_search(question)
+                if web_results:
+                    web_text = "\n\n".join([f"{r['title']}: {r['body']}" for r in web_results])
+                    context_parts.append("=== From Web ===\n" + web_text)
+                    web_sources = [r.get("href", "") for r in web_results if r.get("href")]
+
+            context = "\n\n".join(context_parts)
+
+            prompt = f"""Answer the question based on the context below.
 
 {context}
 
@@ -48,9 +72,15 @@ Answer:"""
 
         st.markdown(answer)
 
-        sources = list({doc.metadata.get("source", "Unknown") for doc in docs})
-        with st.expander("Sources"):
-            for src in sources:
-                st.write(f"- {src}")
+        if doc_sources or web_sources:
+            with st.expander("Sources"):
+                if doc_sources:
+                    st.markdown("**Documents:**")
+                    for src in doc_sources:
+                        st.write(f"- {src}")
+                if web_sources:
+                    st.markdown("**Web:**")
+                    for url in web_sources:
+                        st.write(f"- {url}")
 
     st.session_state.messages.append({"role": "assistant", "content": answer})
