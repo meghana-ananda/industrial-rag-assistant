@@ -39,7 +39,7 @@ class RAGEvaluator:
             source = "documents"
             sources = [d.metadata.get("source", "Unknown") for d in docs]
         else:
-            from duckduckgo_search import DDGS
+            from ddgs import DDGS
             with DDGS() as ddgs:
                 web_results = list(ddgs.text(question, max_results=5))
             if web_results:
@@ -51,7 +51,11 @@ class RAGEvaluator:
                 source = "none"
                 sources = []
 
-        prompt = f"""Answer the question based ONLY on the context below. If the context does not contain enough information, say "I don't have enough information to answer this."
+        if not context:
+            answer = "I couldn't find relevant information in the documents or on the web for this question."
+        else:
+            prompt = f"""Answer the question based ONLY on the context below. Do not use your own knowledge.
+If the context does not contain enough information, say "I don't have enough information to answer this."
 
 Context:
 {context}
@@ -59,8 +63,7 @@ Context:
 Question: {question}
 
 Answer:"""
-
-        answer = self.llm.invoke(prompt)
+            answer = self.llm.invoke(prompt)
 
         return {
             "question": question,

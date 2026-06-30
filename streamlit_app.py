@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import OllamaLLM
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 
 load_dotenv()
 
@@ -86,8 +86,11 @@ Question: {question}
 
 Answer:"""
 
-            llm = OllamaLLM(model="mistral")
-            answer = llm.invoke(prompt)
+            if not context:
+                answer = "I couldn't find relevant information in the documents or on the web for this question."
+            else:
+                llm = OllamaLLM(model="mistral")
+                answer = llm.invoke(prompt)
 
         st.markdown(answer)
 
