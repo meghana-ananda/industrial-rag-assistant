@@ -31,7 +31,7 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-search_mode = st.sidebar.radio("Search Mode", ["Documents Only", "Web Only", "Documents + Web"])
+search_mode = st.sidebar.radio("Search Mode", ["Documents Only", "Web Only", "Documents + Web"], index=1)
 
 if question := st.chat_input("Ask a question..."):
     st.session_state.messages.append({"role": "user", "content": question})
