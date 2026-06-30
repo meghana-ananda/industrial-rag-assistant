@@ -1,0 +1,235 @@
+{
+  "timestamp": "20260630_132605",
+  "total_tests": 18,
+  "passed_tests": 15,
+  "individual_results": [
+    {
+      "question": "What is basic oxygen steelmaking?",
+      "answer": " Basic Oxygen Steelmaking (BOS) is a process used to create steel, specifically in the context provided, it is one of the two main processes to create steel along with Electric Arc Furnace (EAF). This process begins with the blast furnace, where iron ore is combined with coke, limestone and a blast of compressed hot air to produce molten iron. The BOF then combines this pig iron, scrap steel and flux in a furnace, which then has oxygen blown into it to remove carbon.",
+      "source": "documents",
+      "groundedness": 1.0,
+      "relevance": 1.0,
+      "length_score": 1.0,
+      "correctness": 1.0,
+      "overall_score": 1.0,
+      "sources": [
+        "industrial_rag\\Basic Oxygen.pdf",
+        "industrial_rag\\AISI-Profile-Book_updated-3.2023.pdf",
+        "industrial_rag\\Basic Oxygen.pdf",
+        "industrial_rag\\ASTM-Standard.pdf",
+        "industrial_rag\\2-7-1.pdf"
+      ]
+    },
+    {
+      "question": "What are the main steps in steel production?",
+      "answer": " The main steps in steel production, as described in the context, are:\n\n1. Iron ore and coal preparation\n2. Iron making (converting ore to liquid iron)\n3. Steel making (converting iron to liquid steel)\n4. Continuous casting (solidifying liquid steel continuously)\n5. Cold/Hot rolling (pressing steel plates)\n6. After rolling treatment (includes heat treatment, coating treatment, etc.)\n\nThe process of steel production begins with the preparation of iron ore and coal. This is followed by the conversion of ore to liquid iron (iron making), then converting this liquid iron into liquid steel (steel making). The liquid steel is then continuously cast into solid form, rolled into plates, and treated accordingly for various applications.",
+      "source": "documents",
+      "groundedness": 1.0,
+      "relevance": 1.0,
+      "length_score": 1.0,
+      "correctness": 1.0,
+      "overall_score": 1.0,
+      "sources": [
+        "industrial_rag\\2-7-1.pdf",
+        "industrial_rag\\AISI-Profile-Book_updated-3.2023.pdf",
+        "industrial_rag\\2-7-1.pdf",
+        "industrial_rag\\ASTM-Standard.pdf",
+        "industrial_rag\\ASTM-Standard.pdf"
+      ]
+    },
+    {
+      "question": "What are defects in steel?",
+      "answer": " Defects in steel refer to material irregularities or discontinuities that may be detectable by inspection. They can compromise the aesthetic quality and structural integrity of steel, potentially causing safety hazards.",
+      "source": "documents",
+      "groundedness": 1.0,
+      "relevance": 1.0,
+      "length_score": 1.0,
+      "correctness": 1.0,
+      "overall_score": 1.0,
+      "sources": [
+        "industrial_rag\\ASTM-Standard.pdf",
+        "industrial_rag\\ASTM-Standard.pdf",
+        "industrial_rag\\s41598-024-58643-1.pdf",
+        "industrial_rag\\2507.15476v2.pdf",
+        "industrial_rag\\Basic Oxygen.pdf"
+      ]
+    },
+    {
+      "question": "",
+      "overall_score": 1.0,
+      "note": "empty query handled"
+    },
+    {
+      "question": "   ",
+      "overall_score": 1.0,
+      "note": "empty query handled"
+    },
+    {
+      "question": "xyz abc qwerty 12345",
+      "answer": " I don't have enough information to answer this as there is no context given that could allow for the determination of xyz, abc, qwerty, or 12345.",
+      "source": "none",
+      "groundedness": 0.9,
+      "relevance": 0.0,
+      "length_score": 0.5,
+      "correctness": 1.0,
+      "overall_score": 0.6,
+      "sources": []
+    },
+    {
+      "question": "asdfghjkl",
+      "answer": " \"asdfghjkl\" is an internet slang that expresses intense feelings or excitement.",
+      "source": "web",
+      "groundedness": 1.0,
+      "relevance": 1.0,
+      "length_score": 0.5,
+      "correctness": 1.0,
+      "overall_score": 0.88,
+      "sources": [
+        "https://m.youtube.com/watch?v=1sgfODcZm6s",
+        "https://m.youtube.com/watch?v=B6r3tRFMc7Q",
+        "https://7esl.com/asdfghjkl/",
+        "https://en.m.wiktionary.org/wiki/asdfghjkl",
+        "https://fluentslang.com/asdfghjkl-meaning/"
+      ]
+    },
+    {
+      "question": "What is the meaning of life?",
+      "answer": " I don't have enough information to answer this question, as the provided context doesn't offer a definition or interpretation of the meaning of life.",
+      "source": "none",
+      "groundedness": 0.9,
+      "relevance": 0.0,
+      "length_score": 0.5,
+      "correctness": 1.0,
+      "overall_score": 0.6,
+      "sources": []
+    },
+    {
+      "question": "Who won the FIFA World Cup 2022?",
+      "answer": " I don't have enough information to answer this. The provided context doesn't mention any details about the winner of the FIFA World Cup 2022 as it is a future event and no results are available yet.",
+      "source": "none",
+      "groundedness": 0.9,
+      "relevance": 0.0,
+      "length_score": 1.0,
+      "correctness": 1.0,
+      "overall_score": 0.72,
+      "sources": []
+    },
+    {
+      "question": "What is a Python decorator?",
+      "answer": " A Python decorator is a special function or syntax that enables code reuse and modification by wrapping an existing function or class. It allows the programmer to add extra functionality before or after the original function defined without explicitly modifying it. Decorators in Python are defined using the @ symbol followed by the name of the decorator function.",
+      "source": "none",
+      "groundedness": 1.0,
+      "relevance": 0.0,
+      "length_score": 1.0,
+      "correctness": 1.0,
+      "overall_score": 0.75,
+      "sources": []
+    },
+    {
+      "question": "Tell me something",
+      "answer": " I'm an AI and don't have personal experiences or feelings. However, based on the question you asked, I could provide general information or answers to questions if provided with the right context. In this case, since there is no specific question given in the context, I'll take it as a casual conversation starter. Here's a fun fact: Did you know that octopuses have three hearts? Two pump blood to the gills, while the third pumps it to the rest of the body. Isn't nature fascinating?",
+      "source": "none",
+      "groundedness": 1.0,
+      "relevance": 0.0,
+      "length_score": 1.0,
+      "correctness": 1.0,
+      "overall_score": 0.75,
+      "sources": []
+    },
+    {
+      "question": "What?",
+      "answer": " Based on the provided context, I don't have enough information to answer the question \"What?\" as there is no explicit noun or entity mentioned in the context.",
+      "source": "none",
+      "groundedness": 0.9,
+      "relevance": 0.0,
+      "length_score": 0.5,
+      "correctness": 1.0,
+      "overall_score": 0.6,
+      "sources": []
+    },
+    {
+      "question": "Explain",
+      "answer": " In the provided context, a robot named 'B-9' is mentioned, which has a malfunctioning safety feature. The safety feature was designed to disable the robot when it received 20 units of radiation exposure. However, due to a malfunction, B-9 continued functioning even after exceeding 20 units of radiation exposure. This indicates that the safety mechanism did not work as intended and allowed the robot to continue operating despite receiving more than the designated safe amount of radiation exposure.",
+      "source": "none",
+      "groundedness": 1.0,
+      "relevance": 0.0,
+      "length_score": 1.0,
+      "correctness": 1.0,
+      "overall_score": 0.75,
+      "sources": []
+    },
+    {
+      "question": "What is hot rolling?",
+      "answer": " Based on the provided context, there is no explicit mention or definition of 'hot rolling'. However, in general terms, hot rolling refers to a metalworking process in which metal is passed through a pair of rollers while the metal is at a high temperature, typically above its re-crystallization temperature. This process is used to reduce the thickness of the metal and improve its formability.",
+      "source": "none",
+      "groundedness": 0.8,
+      "relevance": 0.0,
+      "length_score": 1.0,
+      "correctness": 1.0,
+      "overall_score": 0.7,
+      "sources": []
+    },
+    {
+      "question": "What about cold rolling?",
+      "answer": " The context does not provide information regarding cold rolling.",
+      "source": "documents",
+      "groundedness": 1.0,
+      "relevance": 1.0,
+      "length_score": 0.2,
+      "correctness": 1.0,
+      "overall_score": 0.8,
+      "sources": [
+        "industrial_rag\\Roller-Mill-Maintenance_Whitepaper_May-2024.pdf"
+      ]
+    },
+    {
+      "question": "How do they compare?",
+      "answer": " The provided context does not provide enough information to compare \"feasible,\" \"Google Docs,\" MD, and DO as they are different entities with distinct meanings. If you're asking about the comparison between \"doable\" (synonym for feasible) and Google Docs, then there is no direct comparison as one refers to a concept and the other to an online document creation tool. Similarly, comparing \"DO\" (a medical degree) with MD (Medical Doctorate) would require information on specific factors such as training, specialization, and practice that were not provided in the context. To get a detailed comparison, it is essential to have more context or specific criteria for comparison.",
+      "source": "web",
+      "groundedness": 1.0,
+      "relevance": 1.0,
+      "length_score": 1.0,
+      "correctness": 1.0,
+      "overall_score": 1.0,
+      "sources": [
+        "https://www.merriam-webster.com/dictionary/do",
+        "https://docs.google.com/",
+        "https://www.webmd.com/a-to-z-guides/difference-between-md-and-do",
+        "https://dictionary.cambridge.org/dictionary/english/do",
+        "https://www.dictionary.com/browse/do"
+      ]
+    },
+    {
+      "question": "What are the different types of steel defects and how are they classified?",
+      "answer": " Based on the provided context, the term \"defect\" is defined as an imperfection of sufficient size or magnitude to be cause for rejection. However, the context does not provide specific details about the different types of steel defects or how they are classified.",
+      "source": "documents",
+      "groundedness": 1.0,
+      "relevance": 1.0,
+      "length_score": 1.0,
+      "correctness": 1.0,
+      "overall_score": 1.0,
+      "sources": [
+        "industrial_rag\\ASTM-Standard.pdf",
+        "industrial_rag\\ASTM-Standard.pdf",
+        "industrial_rag\\ASTM-Standard.pdf",
+        "industrial_rag\\ASTM-Standard.pdf",
+        "industrial_rag\\ASTM-Standard.pdf"
+      ]
+    },
+    {
+      "question": "Compare hot rolling and cold rolling \u2014 what are the differences in temperature, process and product quality?",
+      "answer": " Based on the provided context, it discusses cold rolling (specifically chilled iron rolls) in detail, but there's no information about hot rolling. Therefore, I don't have enough information to compare hot rolling and cold rolling in terms of temperature, process, and product quality.",
+      "source": "documents",
+      "groundedness": 0.9,
+      "relevance": 1.0,
+      "length_score": 1.0,
+      "correctness": 1.0,
+      "overall_score": 0.97,
+      "sources": [
+        "industrial_rag\\Roller-Mill-Maintenance_Whitepaper_May-2024.pdf",
+        "industrial_rag\\Roller-Mill-Maintenance_Whitepaper_May-2024.pdf",
+        "industrial_rag\\Roller-Mill-Maintenance_Whitepaper_May-2024.pdf"
+      ]
+    }
+  ]
+}
