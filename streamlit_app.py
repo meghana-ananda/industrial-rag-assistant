@@ -194,11 +194,64 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-col1, col2 = st.columns([6, 1])
-with col2:
-    if st.button("🗑️ Clear", use_container_width=True):
-        st.session_state.messages = []
-        st.rerun()
+st.markdown("""
+<style>
+.clear-btn {
+    position: fixed;
+    bottom: 90px;
+    right: 28px;
+    z-index: 999;
+    background: rgba(30,36,58,0.85);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    transition: background 0.2s, border-color 0.2s;
+    text-decoration: none;
+}
+.clear-btn:hover {
+    background: rgba(99,102,241,0.25);
+    border-color: rgba(99,102,241,0.6);
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Fixed bottom-right clear button via a hidden Streamlit button triggered by JS click
+if st.button("🗑️", key="clear_btn", help="Clear chat", type="secondary"):
+    st.session_state.messages = []
+    st.rerun()
+
+st.markdown("""
+<style>
+/* Move the clear button to fixed bottom-right */
+div[data-testid="stButton"] > button[kind="secondary"] {
+    position: fixed !important;
+    bottom: 90px !important;
+    right: 28px !important;
+    z-index: 999 !important;
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    background: rgba(30,36,58,0.85) !important;
+    border: 1px solid rgba(99,102,241,0.3) !important;
+    color: #e2e8f0 !important;
+    font-size: 1.1rem !important;
+    backdrop-filter: blur(6px) !important;
+    min-width: unset !important;
+}
+div[data-testid="stButton"] > button[kind="secondary"]:hover {
+    background: rgba(99,102,241,0.25) !important;
+    border-color: rgba(99,102,241,0.6) !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 
 # ── Chat history ──────────────────────────────────────────────────────────────
