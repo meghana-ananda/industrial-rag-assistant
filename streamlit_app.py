@@ -15,15 +15,15 @@ st.title("🏭 Industrial RAG Assistant")
 st.caption("Searches your industrial documents first, falls back to the web if needed.")
 
 @st.cache_resource
-def load_retriever():
+def load_vectorstore():
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    vs = FAISS.load_local("vectorstore", embeddings, allow_dangerous_deserialization=True)
-    return HybridRetriever(vs, k=5)
+    return FAISS.load_local("vectorstore", embeddings, allow_dangerous_deserialization=True)
 
-retriever = load_retriever()
+_vectorstore = load_vectorstore()
 
-def get_relevant_docs(question, threshold=1.0):
+def get_relevant_docs(question, threshold=1.0, top_k=5):
     """Hybrid BM25 + semantic retrieval fused with Reciprocal Rank Fusion."""
+    retriever = HybridRetriever(_vectorstore, k=top_k)
     return retriever.retrieve(question, threshold=threshold)
 
 def web_search(query, max_results=5):
@@ -39,6 +39,8 @@ for msg in st.session_state.messages:
         st.markdown(msg["content"])
 
 st.sidebar.markdown("### Search Settings")
+top_k = st.sidebar.slider("Chunks to retrieve (top-K)", 1, 10, 5, 1,
+    help="Number of document chunks retrieved per query. Higher = more context, but slower and noisier.")
 relevance_threshold = st.sidebar.slider("Doc relevance threshold", 0.5, 2.0, 1.0, 0.1,
     help="Lower = stricter (falls back to web more often). Higher = uses docs even if loosely related.")
 use_rewriter = st.sidebar.toggle("Query rewriting", value=True,
@@ -57,7 +59,7 @@ if question := st.chat_input("Ask a question..."):
             search_query = rewrite_query(question) if use_rewriter else question
             if use_rewriter and search_query != question:
                 st.caption(f"Rewritten query: _{search_query}_")
-            docs = get_relevant_docs(search_query, threshold=relevance_threshold)
+            docs = get_relevant_docs(search_query, threshold=relevance_threshold, top_k=top_k)
             context_parts = []
             doc_sources = []
             web_sources = []
