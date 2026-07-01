@@ -13,154 +13,138 @@ load_dotenv()
 st.set_page_config(
     page_title="SteelMind — Industrial RAG Assistant",
     page_icon="⚙️",
-    layout="wide",
-    initial_sidebar_state="expanded",
+    layout="centered",
+    initial_sidebar_state="collapsed",
 )
 
-# ── Custom CSS ────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-/* ---- Google Font ---- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
-}
+html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
-/* ---- Page background ---- */
+/* hide the sidebar toggle arrow entirely */
+[data-testid="collapsedControl"] { display: none !important; }
+section[data-testid="stSidebar"] { display: none !important; }
+
 .stApp {
-    background: linear-gradient(135deg, #0f1117 0%, #1a1f2e 50%, #0f1117 100%);
+    background: linear-gradient(160deg, #0d1117 0%, #161b27 60%, #0d1117 100%);
 }
 
-/* ---- Sidebar ---- */
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #12151f 0%, #1c2033 100%);
-    border-right: 1px solid #2a3050;
-}
-[data-testid="stSidebar"] * { color: #c8d0e8 !important; }
-[data-testid="stSidebar"] h1,
-[data-testid="stSidebar"] h2,
-[data-testid="stSidebar"] h3 { color: #e8eaf6 !important; }
-
-/* ---- Hero header ---- */
+/* ---- Hero ---- */
 .hero {
-    background: linear-gradient(135deg, #1e2a4a 0%, #2d3561 50%, #1a2340 100%);
-    border: 1px solid #3d4f8a;
-    border-radius: 16px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #1b2646 0%, #252f55 60%, #1a2040 100%);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 20px;
+    padding: 2.2rem 2.8rem 2rem;
+    margin-bottom: 2rem;
     position: relative;
     overflow: hidden;
 }
-.hero::before {
+.hero::after {
     content: "";
     position: absolute;
-    top: -60px; right: -60px;
-    width: 200px; height: 200px;
-    background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+    top: -80px; right: -80px;
+    width: 260px; height: 260px;
+    background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
     border-radius: 50%;
-}
-.hero-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin: 0 0 0.5rem 0;
-    letter-spacing: -0.5px;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-}
-.hero-sub {
-    font-size: 0.95rem;
-    color: #b0bcd8;
-    margin: 0;
-    line-height: 1.6;
+    pointer-events: none;
 }
 .hero-badge {
     display: inline-block;
-    background: rgba(99,102,241,0.25);
-    border: 1px solid rgba(99,102,241,0.5);
+    background: rgba(99,102,241,0.2);
+    border: 1px solid rgba(99,102,241,0.45);
     color: #c4cafe;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 600;
-    padding: 0.2rem 0.7rem;
+    padding: 0.22rem 0.75rem;
     border-radius: 20px;
     margin-bottom: 0.9rem;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
+}
+.hero-title {
+    font-size: 2.1rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    margin: 0 0 0.55rem 0 !important;
+    letter-spacing: -0.5px !important;
+    line-height: 1.2 !important;
+}
+.hero-sub {
+    font-size: 0.93rem;
+    color: #94a3b8;
+    margin: 0;
+    line-height: 1.65;
 }
 
 /* ---- Chat messages ---- */
 [data-testid="stChatMessage"] {
-    background: rgba(255,255,255,0.03) !important;
-    border: 1px solid rgba(255,255,255,0.07) !important;
-    border-radius: 12px !important;
-    margin-bottom: 0.75rem !important;
-    padding: 1rem 1.25rem !important;
+    background: rgba(255,255,255,0.025) !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    border-radius: 14px !important;
+    margin-bottom: 0.8rem !important;
+    padding: 1rem 1.3rem !important;
 }
 
 /* ---- Source pills ---- */
 .source-pill {
     display: inline-block;
-    background: rgba(99,102,241,0.15);
-    border: 1px solid rgba(99,102,241,0.3);
+    background: rgba(99,102,241,0.13);
+    border: 1px solid rgba(99,102,241,0.28);
     color: #a5b4fc;
-    font-size: 0.72rem;
+    font-size: 0.71rem;
     font-weight: 500;
-    padding: 0.2rem 0.65rem;
+    padding: 0.18rem 0.6rem;
     border-radius: 20px;
-    margin: 0.15rem 0.2rem 0.15rem 0;
+    margin: 0.15rem 0.2rem 0 0;
+    text-decoration: none;
 }
 .source-pill-web {
-    background: rgba(16,185,129,0.12);
-    border-color: rgba(16,185,129,0.3);
+    background: rgba(16,185,129,0.1);
+    border-color: rgba(16,185,129,0.28);
     color: #6ee7b7;
 }
 
 /* ---- Rewrite badge ---- */
 .rewrite-box {
-    background: rgba(245,158,11,0.08);
-    border-left: 3px solid rgba(245,158,11,0.5);
+    background: rgba(245,158,11,0.07);
+    border-left: 3px solid rgba(245,158,11,0.45);
     border-radius: 0 8px 8px 0;
-    padding: 0.4rem 0.8rem;
-    margin: 0.5rem 0 0.75rem 0;
-    font-size: 0.8rem;
+    padding: 0.35rem 0.8rem;
+    margin: 0.5rem 0 0.7rem 0;
+    font-size: 0.79rem;
     color: #fcd34d;
 }
 
 /* ---- Chat input ---- */
 [data-testid="stChatInput"] {
-    background: #1a1f2e !important;
+    background: #151b2b !important;
     border: 1px solid #2a3050 !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
 }
 [data-testid="stChatInput"] textarea {
     background: transparent !important;
     border: none !important;
+    outline: none !important;
     color: #e2e8f0 !important;
     font-family: 'Inter', sans-serif !important;
+    font-size: 0.95rem !important;
 }
 [data-testid="stChatInput"]:focus-within {
     border-color: #6366f1 !important;
-    box-shadow: 0 0 0 3px rgba(99,102,241,0.12) !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.1) !important;
 }
 
-/* ---- Sliders & toggles tint ---- */
-[data-testid="stSlider"] [data-testid="stThumbValue"] { color: #a5b4fc !important; }
-
 /* ---- Scrollbar ---- */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0f1117; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #0d1117; }
 ::-webkit-scrollbar-thumb { background: #2d3561; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
 
-/* ---- Expander ---- */
-[data-testid="stExpander"] {
-    background: rgba(255,255,255,0.02) !important;
-    border: 1px solid rgba(255,255,255,0.07) !important;
-    border-radius: 10px !important;
-}
-
-/* ---- Divider color ---- */
-hr { border-color: #2a3050 !important; }
+/* ---- General text ---- */
+p, li, span { color: #cbd5e1; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -173,10 +157,15 @@ def load_vectorstore():
 
 _vectorstore = load_vectorstore()
 
+# Fixed defaults — no sidebar needed
+TOP_K = 5
+THRESHOLD = 1.0
+USE_REWRITER = True
 
-def get_relevant_docs(question, threshold=1.0, top_k=5):
-    retriever = HybridRetriever(_vectorstore, k=top_k)
-    return retriever.retrieve(question, threshold=threshold)
+
+def get_relevant_docs(question):
+    retriever = HybridRetriever(_vectorstore, k=TOP_K)
+    return retriever.retrieve(question, threshold=THRESHOLD)
 
 
 def web_search(query, max_results=5):
@@ -185,65 +174,31 @@ def web_search(query, max_results=5):
 
 
 def short_source(path: str) -> str:
-    """Return just the filename without path or extension."""
     return os.path.splitext(os.path.basename(path))[0]
 
 
 # ── Session state ─────────────────────────────────────────────────────────────
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if "total_queries" not in st.session_state:
-    st.session_state.total_queries = 0
-if "doc_hits" not in st.session_state:
-    st.session_state.doc_hits = 0
-if "web_hits" not in st.session_state:
-    st.session_state.web_hits = 0
 
 
-# ── Sidebar ───────────────────────────────────────────────────────────────────
-with st.sidebar:
-    st.markdown("## ⚙️ SteelMind")
-    st.markdown("*Industrial Knowledge Assistant*")
-    st.divider()
-
-    st.markdown("### Retrieval Settings")
-    top_k = st.slider("Chunks to retrieve (K)", 1, 10, 5, 1,
-        help="More chunks = richer context, but slower responses.")
-    relevance_threshold = st.slider("Relevance threshold", 0.5, 2.0, 1.0, 0.1,
-        help="Lower = stricter match required before using documents.")
-    use_rewriter = st.toggle("Query rewriting", value=True,
-        help="Expands your question into a keyword-rich search query.")
-
-    st.divider()
-    st.markdown("### Session Stats")
-    st.markdown(f"**{st.session_state.total_queries}** questions asked")
-    st.markdown(f"📄 **{st.session_state.doc_hits}** answered from docs")
-    st.markdown(f"🌐 **{st.session_state.web_hits}** answered from web")
-
-    st.divider()
-    if st.button("🗑️ Clear chat", use_container_width=True):
-        st.session_state.messages = []
-        st.session_state.total_queries = 0
-        st.session_state.doc_hits = 0
-        st.session_state.web_hits = 0
-        st.rerun()
-
-    st.divider()
-    st.markdown(
-        "<div style='font-size:0.72rem;color:#4a5568;'>Powered by Ollama · FAISS · BM25<br>Model: mistral · Embeddings: MiniLM</div>",
-        unsafe_allow_html=True,
-    )
-
-
-# ── Hero header ───────────────────────────────────────────────────────────────
+# ── Hero ──────────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="hero">
   <div class="hero-badge">⚡ Steel Manufacturing Intelligence</div>
-  <h1 class="hero-title">SteelMind RAG Assistant</h1>
-  <p class="hero-sub">Ask anything about steelmaking processes, equipment, quality standards, and defect analysis.<br>
-  Answers are grounded in your technical document library — with live web fallback.</p>
+  <p class="hero-title">SteelMind RAG Assistant</p>
+  <p class="hero-sub">
+    Ask anything about steelmaking processes, equipment, quality standards, and defect analysis.<br>
+    Answers are grounded in your technical document library — with live web fallback.
+  </p>
 </div>
 """, unsafe_allow_html=True)
+
+col1, col2 = st.columns([6, 1])
+with col2:
+    if st.button("🗑️ Clear", use_container_width=True):
+        st.session_state.messages = []
+        st.rerun()
 
 
 # ── Chat history ──────────────────────────────────────────────────────────────
@@ -263,7 +218,7 @@ for msg in st.session_state.messages:
             st.markdown(f'<div style="margin-top:0.5rem">{pills}</div>', unsafe_allow_html=True)
         if msg.get("web_sources"):
             pills = "".join(
-                f'<a href="{u}" target="_blank" class="source-pill source-pill-web">🌐 {u[:45]}…</a>'
+                f'<a href="{u}" target="_blank" class="source-pill source-pill-web">🌐 {u[:50]}…</a>'
                 for u in msg["web_sources"][:3]
             )
             st.markdown(f'<div style="margin-top:0.5rem">{pills}</div>', unsafe_allow_html=True)
@@ -279,33 +234,28 @@ if question := st.chat_input("Ask about steelmaking, equipment, defects, quality
         rewritten = None
         doc_sources = []
         web_sources = []
-        source_used = None
 
         with st.spinner("Searching knowledge base…"):
-            search_query = rewrite_query(question) if use_rewriter else question
-            if use_rewriter and search_query != question:
+            search_query = rewrite_query(question) if USE_REWRITER else question
+            if USE_REWRITER and search_query != question:
                 rewritten = search_query
                 st.markdown(
                     f'<div class="rewrite-box">✍️ Searched as: <em>{search_query}</em></div>',
                     unsafe_allow_html=True,
                 )
 
-            docs = get_relevant_docs(search_query, threshold=relevance_threshold, top_k=top_k)
+            docs = get_relevant_docs(search_query)
             context_parts = []
 
             if docs:
                 context_parts.append("\n\n".join(d.page_content for d in docs))
                 doc_sources = sorted({d.metadata.get("source", "Unknown") for d in docs})
-                source_used = "documents"
-                st.session_state.doc_hits += 1
             else:
                 st.toast("Not found in documents — searching the web…", icon="🌐")
                 web_results = web_search(question)
                 if web_results:
                     context_parts.append("\n\n".join(f"{r['title']}: {r['body']}" for r in web_results))
                     web_sources = [r.get("href", "") for r in web_results if r.get("href")]
-                    source_used = "web"
-                    st.session_state.web_hits += 1
 
         context = "\n\n".join(context_parts)
 
@@ -330,20 +280,15 @@ Answer:"""
 
         st.markdown(answer)
 
-        # Source pills
         if doc_sources:
-            pills = "".join(
-                f'<span class="source-pill">📄 {short_source(s)}</span>' for s in doc_sources
-            )
+            pills = "".join(f'<span class="source-pill">📄 {short_source(s)}</span>' for s in doc_sources)
             st.markdown(f'<div style="margin-top:0.75rem">{pills}</div>', unsafe_allow_html=True)
         if web_sources:
             pills = "".join(
-                f'<a href="{u}" target="_blank" class="source-pill source-pill-web">🌐 {u[:45]}…</a>'
+                f'<a href="{u}" target="_blank" class="source-pill source-pill-web">🌐 {u[:50]}…</a>'
                 for u in web_sources[:3]
             )
             st.markdown(f'<div style="margin-top:0.75rem">{pills}</div>', unsafe_allow_html=True)
-
-        st.session_state.total_queries += 1
 
     st.session_state.messages.append({
         "role": "assistant",
