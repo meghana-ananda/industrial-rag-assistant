@@ -5,6 +5,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import OllamaLLM
 from ddgs import DDGS
+from hybrid_retriever import HybridRetriever
 
 load_dotenv()
 
@@ -13,16 +14,16 @@ st.title("🏭 Industrial RAG Assistant")
 st.caption("Searches your industrial documents first, falls back to the web if needed.")
 
 @st.cache_resource
-def load_vectorstore():
+def load_retriever():
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    return FAISS.load_local("vectorstore", embeddings, allow_dangerous_deserialization=True)
+    vs = FAISS.load_local("vectorstore", embeddings, allow_dangerous_deserialization=True)
+    return HybridRetriever(vs, k=5)
 
-vectorstore = load_vectorstore()
+retriever = load_retriever()
 
 def get_relevant_docs(question, threshold=1.0):
-    """Search FAISS and return only docs with similarity score below threshold."""
-    results = vectorstore.similarity_search_with_score(question, k=5)
-    return [doc for doc, score in results if score < threshold]
+    """Hybrid BM25 + semantic retrieval fused with Reciprocal Rank Fusion."""
+    return retriever.retrieve(question, threshold=threshold)
 
 def web_search(query, max_results=5):
     with DDGS() as ddgs:

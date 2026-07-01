@@ -4,11 +4,13 @@ from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import OllamaLLM
 from ddgs import DDGS
+from hybrid_retriever import HybridRetriever
 
 load_dotenv()
 
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 vectorstore = FAISS.load_local("vectorstore", embeddings, allow_dangerous_deserialization=True)
+retriever = HybridRetriever(vectorstore, k=5)
 llm = OllamaLLM(model="mistral")
 
 DOC_RELEVANCE_THRESHOLD = 1.0
@@ -18,8 +20,7 @@ def web_search(query, max_results=5):
         return list(ddgs.text(query, max_results=max_results))
 
 def get_relevant_docs(question):
-    results = vectorstore.similarity_search_with_score(question, k=5)
-    return [doc for doc, score in results if score < DOC_RELEVANCE_THRESHOLD]
+    return retriever.retrieve(question, threshold=DOC_RELEVANCE_THRESHOLD)
 
 def query_rag(question):
     print(f"\n{'='*80}")
