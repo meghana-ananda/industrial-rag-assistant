@@ -1,6 +1,6 @@
 """
 RAGAS evaluation for the Industrial RAG Assistant.
-Uses Gemini as the LLM judge (requires GOOGLE_API_KEY in .env).
+Uses Ollama (mistral) as the local LLM judge — no API key required.
 
 Metrics:
   - Faithfulness       : Is every claim in the answer supported by the retrieved chunks?
@@ -9,6 +9,7 @@ Metrics:
   - Context Precision  : Of the retrieved chunks, how many were actually needed?
 
 Run: python evaluate_ragas.py
+Requires: ollama running locally with mistral pulled (ollama pull mistral)
 """
 
 import os
@@ -18,12 +19,13 @@ from datetime import datetime
 
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_ollama import ChatOllama, OllamaEmbeddings
 
 from ragas import evaluate
-from ragas.metrics import Faithfulness, ResponseRelevancy, LLMContextRecall, LLMContextPrecisionWithReference
+from ragas.metrics import Faithfulness, AnswerRelevancy, ContextRecall, ContextPrecision
 from ragas.llms import LangchainLLMWrapper
 from ragas.embeddings import LangchainEmbeddingsWrapper
+from ragas.run_config import RunConfig
 from datasets import Dataset
 
 load_dotenv()
@@ -104,18 +106,19 @@ def run_ragas_evaluation():
     print("INDUSTRIAL RAG ASSISTANT — RAGAS EVALUATION")
     print("="*80)
 
-    # Set up Gemini as the LLM judge
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        print("ERROR: GOOGLE_API_KEY not found in .env — needed for RAGAS LLM judge.")
+    # Set up Ollama (mistral) as the local LLM judge — no API key needed
+    print("\nConnecting to Ollama (mistral)...")
+    try:
+        judge_llm = LangchainLLMWrapper(
+            ChatOllama(model="mistral", temperature=0)
+        )
+        judge_embeddings = LangchainEmbeddingsWrapper(
+            OllamaEmbeddings(model="nomic-embed-text")
+        )
+    except Exception as e:
+        print(f"ERROR: Could not connect to Ollama — is it running? ({e})")
+        print("Start Ollama with: ollama serve")
         return
-
-    judge_llm = LangchainLLMWrapper(
-        ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key=api_key)
-    )
-    judge_embeddings = LangchainEmbeddingsWrapper(
-        GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=api_key)
-    )
 
     print("\nLoading vectorstore...")
     vectorstore = load_vectorstore()
@@ -133,27 +136,33 @@ def run_ragas_evaluation():
         contexts.append(ctx)
         ground_truths.append(item["ground_truth"])
 
-    # Build RAGAS dataset
+    # Build RAGAS dataset (ragas 0.2.x column names)
+    # Some metrics (ContextRecall) need "reference"; ContextPrecision needs "reference" too
     dataset = Dataset.from_dict({
-        "user_input": questions,
-        "response": answers,
-        "retrieved_contexts": contexts,
+        "question": questions,
+        "answer": answers,
+        "contexts": contexts,
         "reference": ground_truths,
+        "ground_truths": ground_truths,
     })
 
-    print("\nRunning RAGAS metrics (Gemini as judge)...")
+    print("\nRunning RAGAS metrics (Ollama/mistral as judge)...")
     metrics = [
         Faithfulness(),
-        ResponseRelevancy(),
-        LLMContextRecall(),
-        LLMContextPrecisionWithReference(),
+        AnswerRelevancy(),
+        ContextRecall(),
+        ContextPrecision(),
     ]
+
+    run_config = RunConfig(timeout=120, max_retries=3, max_workers=4)
 
     result = evaluate(
         dataset=dataset,
         metrics=metrics,
         llm=judge_llm,
         embeddings=judge_embeddings,
+        run_config=run_config,
+        raise_exceptions=False,
     )
 
     # Display results
@@ -164,13 +173,14 @@ def run_ragas_evaluation():
 
     print(f"\n{'Question':<55} {'Faith':>6} {'Relev':>6} {'Recall':>7} {'Prec':>6}")
     print("-"*85)
+    q_col = "user_input" if "user_input" in df.columns else "question"
     for _, row in df.iterrows():
-        q = row["user_input"][:52] + "..." if len(row["user_input"]) > 52 else row["user_input"]
-        print(f"{q:<55} {row.get('faithfulness', 0):>6.2f} {row.get('response_relevancy', 0):>6.2f} "
-              f"{row.get('llm_context_recall', 0):>7.2f} {row.get('llm_context_precision_with_reference', 0):>6.2f}")
+        q = row[q_col][:52] + "..." if len(row[q_col]) > 52 else row[q_col]
+        print(f"{q:<55} {row.get('faithfulness', float('nan')):>6.2f} {row.get('answer_relevancy', float('nan')):>6.2f} "
+              f"{row.get('context_recall', float('nan')):>7.2f} {row.get('context_precision', float('nan')):>6.2f}")
 
     print("\nAVERAGE SCORES:")
-    for metric in ["faithfulness", "response_relevancy", "llm_context_recall", "llm_context_precision_with_reference"]:
+    for metric in ["faithfulness", "answer_relevancy", "context_recall", "context_precision"]:
         if metric in df.columns:
             print(f"  {metric:<45}: {df[metric].mean():.3f}")
 
@@ -180,8 +190,8 @@ def run_ragas_evaluation():
     result_dict = {
         "timestamp": timestamp,
         "num_questions": len(EVAL_DATASET),
-        "averages": {m: float(df[m].mean()) for m in ["faithfulness", "response_relevancy",
-                     "llm_context_recall", "llm_context_precision_with_reference"] if m in df.columns},
+        "averages": {m: float(df[m].mean()) for m in ["faithfulness", "answer_relevancy",
+                     "context_recall", "context_precision"] if m in df.columns},
         "per_question": df.to_dict(orient="records"),
     }
     with open(out_file, "w") as f:
