@@ -5,6 +5,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import OllamaLLM
 from ddgs import DDGS
 from hybrid_retriever import HybridRetriever
+from query_rewriter import rewrite_query
 
 load_dotenv()
 
@@ -27,8 +28,12 @@ def query_rag(question):
     print(f"Question: {question}")
     print('='*80)
 
+    rewritten = rewrite_query(question)
+    if rewritten != question:
+        print(f"Rewritten query: {rewritten}")
+
     print("\nSearching documents...")
-    docs = get_relevant_docs(question)
+    docs = get_relevant_docs(rewritten)
     context = ""
 
     if docs:

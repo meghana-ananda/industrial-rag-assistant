@@ -20,6 +20,8 @@ from datetime import datetime
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama, OllamaEmbeddings
+from hybrid_retriever import HybridRetriever
+from query_rewriter import rewrite_query
 
 from ragas import evaluate
 from ragas.metrics import Faithfulness, AnswerRelevancy, ContextRecall, ContextPrecision
@@ -70,15 +72,16 @@ EVAL_DATASET = [
 
 def load_vectorstore():
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    return FAISS.load_local("vectorstore", embeddings, allow_dangerous_deserialization=True)
+    vs = FAISS.load_local("vectorstore", embeddings, allow_dangerous_deserialization=True)
+    return vs, HybridRetriever(vs, k=5)
 
 
-def get_rag_response(vectorstore, question, threshold=1.0):
-    """Run the RAG pipeline and return answer + retrieved context strings."""
+def get_rag_response(retriever, question, threshold=1.0):
+    """Run the full RAG pipeline (rewrite → hybrid retrieve → generate) and return answer + contexts."""
     from langchain_ollama import OllamaLLM
 
-    results = vectorstore.similarity_search_with_score(question, k=5)
-    relevant_docs = [doc for doc, score in results if score < threshold]
+    rewritten = rewrite_query(question)
+    relevant_docs = retriever.retrieve(rewritten, threshold=threshold)
 
     if not relevant_docs:
         return "I couldn't find relevant information in the documents for this question.", []
@@ -121,7 +124,7 @@ def run_ragas_evaluation():
         return
 
     print("\nLoading vectorstore...")
-    vectorstore = load_vectorstore()
+    _, retriever = load_vectorstore()
 
     print(f"Running RAG pipeline on {len(EVAL_DATASET)} questions...\n")
 
@@ -130,7 +133,7 @@ def run_ragas_evaluation():
     for i, item in enumerate(EVAL_DATASET, 1):
         q = item["question"]
         print(f"  [{i}/{len(EVAL_DATASET)}] {q}")
-        answer, ctx = get_rag_response(vectorstore, q)
+        answer, ctx = get_rag_response(retriever, q)
         questions.append(q)
         answers.append(answer)
         contexts.append(ctx)

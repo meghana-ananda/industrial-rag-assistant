@@ -6,6 +6,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import OllamaLLM
 from ddgs import DDGS
 from hybrid_retriever import HybridRetriever
+from query_rewriter import rewrite_query
 
 load_dotenv()
 
@@ -37,12 +38,14 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-st.sidebar.markdown("### Search Mode")
-st.sidebar.markdown("**Auto:** Documents → Web fallback")
-st.sidebar.markdown("Searches your PDFs first. Falls back to the web if no relevant content is found.")
-st.sidebar.markdown("---")
+st.sidebar.markdown("### Search Settings")
 relevance_threshold = st.sidebar.slider("Doc relevance threshold", 0.5, 2.0, 1.0, 0.1,
     help="Lower = stricter (falls back to web more often). Higher = uses docs even if loosely related.")
+use_rewriter = st.sidebar.toggle("Query rewriting", value=True,
+    help="Rewrites your question into a keyword-rich query before searching. Improves recall for vague questions.")
+st.sidebar.markdown("---")
+st.sidebar.markdown("**Auto:** Documents → Web fallback")
+st.sidebar.markdown("Searches your PDFs first. Falls back to the web if no relevant content is found.")
 
 if question := st.chat_input("Ask a question..."):
     st.session_state.messages.append({"role": "user", "content": question})
@@ -51,7 +54,10 @@ if question := st.chat_input("Ask a question..."):
 
     with st.chat_message("assistant"):
         with st.spinner("Searching documents..."):
-            docs = get_relevant_docs(question, threshold=relevance_threshold)
+            search_query = rewrite_query(question) if use_rewriter else question
+            if use_rewriter and search_query != question:
+                st.caption(f"Rewritten query: _{search_query}_")
+            docs = get_relevant_docs(search_query, threshold=relevance_threshold)
             context_parts = []
             doc_sources = []
             web_sources = []
