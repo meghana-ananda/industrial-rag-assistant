@@ -14,7 +14,8 @@ from pydantic import BaseModel
 
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_ollama import OllamaLLM
+import os
+from langchain_groq import ChatGroq
 
 from hybrid_retriever import HybridRetriever
 from query_rewriter import rewrite_query
@@ -29,7 +30,7 @@ async def lifespan(app: FastAPI):
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vs = FAISS.load_local("vectorstore", embeddings, allow_dangerous_deserialization=True)
     _state["retriever"] = HybridRetriever(vs, k=5)
-    _state["llm"] = OllamaLLM(model="mistral")
+    _state["llm"] = ChatGroq(model="llama3-8b-8192", temperature=0, api_key=os.environ["GROQ_API_KEY"])
     yield
     _state.clear()
 
@@ -72,7 +73,7 @@ def query(req: QueryRequest):
         raise HTTPException(status_code=400, detail="question must not be empty")
 
     retriever: HybridRetriever = _state["retriever"]
-    llm: OllamaLLM = _state["llm"]
+    llm: ChatGroq = _state["llm"]
 
     rewritten = rewrite_query(req.question) if req.rewrite else req.question
     retriever.k = req.top_k
@@ -100,7 +101,7 @@ Question: {req.question}
 
 Answer:"""
 
-    answer = llm.invoke(prompt)
+    answer = llm.invoke(prompt).content
 
     return QueryResponse(
         question=req.question,

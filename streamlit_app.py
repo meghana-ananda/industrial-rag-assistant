@@ -3,7 +3,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_ollama import OllamaLLM
+from langchain_groq import ChatGroq
 from ddgs import DDGS
 from hybrid_retriever import HybridRetriever
 from query_rewriter import rewrite_query
@@ -328,8 +328,8 @@ Answer:"""
             answer = "I couldn't find relevant information in the documents or on the web for this question."
         else:
             with st.spinner("Generating answer…"):
-                llm = OllamaLLM(model="mistral")
-                answer = llm.invoke(prompt)
+                llm = ChatGroq(model="llama3-8b-8192", temperature=0)
+                answer = llm.invoke(prompt).content
 
         st.markdown(answer)
 

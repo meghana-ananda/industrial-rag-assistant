@@ -2,7 +2,8 @@ import os
 from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_ollama import OllamaLLM
+import os
+from langchain_groq import ChatGroq
 from ddgs import DDGS
 from hybrid_retriever import HybridRetriever
 from query_rewriter import rewrite_query
@@ -12,7 +13,7 @@ load_dotenv()
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 vectorstore = FAISS.load_local("vectorstore", embeddings, allow_dangerous_deserialization=True)
 retriever = HybridRetriever(vectorstore, k=5)
-llm = OllamaLLM(model="mistral")
+llm = ChatGroq(model="llama3-8b-8192", temperature=0, api_key=os.environ["GROQ_API_KEY"])
 
 DOC_RELEVANCE_THRESHOLD = 1.0
 
@@ -64,7 +65,7 @@ Question: {question}
 
 Answer:"""
 
-    answer = llm.invoke(prompt)
+    answer = llm.invoke(prompt).content
     print(f"\nAnswer:\n{answer}")
 
 if __name__ == "__main__":
